@@ -1,20 +1,14 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /********************************************************************************************************************************
  * main thread
  ********************************************************************************************************************************/
 
 public class SandwichManager {
-    static Object lock = new Object();
+    // static Object lock = new Object();
     static String logfile = "log.txt";
 
     public static void main(String[] args) {
@@ -31,23 +25,23 @@ public class SandwichManager {
         try {
             FileWriter fw = new FileWriter(logfile, false);
             BufferedWriter bw = new BufferedWriter(fw);
-            bw.write("sandwiches:" + sandwiches);
+            bw.write("sandwiches: " + sandwiches);
             bw.newLine();
-            bw.write("bread capacity:" + breadcap);
+            bw.write("bread capacity: " + breadcap);
             bw.newLine();
-            bw.write("egg capacity:" + eggcap);
+            bw.write("egg capacity: " + eggcap);
             bw.newLine();
-            bw.write("bread makers:" + breadmakers);
+            bw.write("bread makers: " + breadmakers);
             bw.newLine();
-            bw.write("egg makers:" + eggmakers);
+            bw.write("egg makers: " + eggmakers);
             bw.newLine();
-            bw.write("sandwich packers:" + packers);
+            bw.write("sandwich packers: " + packers);
             bw.newLine();
-            bw.write("bread rate:" + breadrate);
+            bw.write("bread rate: " + breadrate);
             bw.newLine();
-            bw.write("egg rate:" + eggrate);
+            bw.write("egg rate: " + eggrate);
             bw.newLine();
-            bw.write("packing rate:" + packingrate);
+            bw.write("packing rate: " + packingrate);
             bw.newLine();
             bw.newLine();
             bw.flush();
@@ -58,42 +52,31 @@ public class SandwichManager {
 
         Buffer breadbuffer = new Buffer(breadcap);
         Buffer eggbuffer = new Buffer(eggcap);
-
+        
+        Map<String, Integer> breadSummaryMap = new HashMap<String, Integer>();
+        Map<String, Integer> eggSummaryMap = new HashMap<String, Integer>();
+        Map<String, Integer> sandwichSummaryMap = new HashMap<String, Integer>();
 
         List<Thread> threads = new ArrayList<Thread>();
 
         // bread makers
-        int breadStart = 0;
-        int numBreadEachMaker = (int) Math.ceil((double) sandwiches*2 / breadmakers);
         for (int i = 0; i < breadmakers; i++) {
             String makerid = "B" + i;
-            int end = Math.min(breadStart + numBreadEachMaker, sandwiches*2);
-            MakeThread breadMaker = new MakeThread(FoodType.BREAD, makerid, breadStart, end, lock, breadbuffer, logfile, breadrate);
-            breadStart = end;
+            MakeThread breadMaker = new MakeThread(FoodType.BREAD, makerid, breadbuffer, logfile, breadrate, sandwiches, breadSummaryMap, eggSummaryMap);
             threads.add(breadMaker);
         }
 
         // egg makers
-        int eggStart = 0;
-        int numEggEachMaker = (int) Math.ceil((double) sandwiches / eggmakers);
         for (int i = 0; i < eggmakers; i++) {
             String makerid = "E" + i;
-            int end = Math.min(eggStart + numEggEachMaker, sandwiches);
-            MakeThread eggMaker = new MakeThread(FoodType.EGG, makerid, eggStart, end, lock, eggbuffer, logfile, eggrate);
-            eggStart = end;
+            MakeThread eggMaker = new MakeThread(FoodType.EGG, makerid, eggbuffer, logfile, eggrate, sandwiches, breadSummaryMap, eggSummaryMap);
             threads.add(eggMaker);
         }
 
         // packers
-        int numBreadEachPacker = (int) Math.ceil((double) sandwiches / packers);
-        if (numBreadEachPacker % 2 == 1)
-            numBreadEachPacker++;
-
         for (int i = 0; i < packers; i++) {
             String packerid = "S" + i;
-            int toPack = Math.min(numBreadEachPacker, sandwiches);
-            PackerThread packer = new PackerThread(packerid, toPack, lock, breadbuffer, eggbuffer, logfile, packingrate);
-            sandwiches -= toPack;
+            PackerThread packer = new PackerThread(packerid, breadbuffer, eggbuffer, logfile, packingrate, sandwiches, sandwichSummaryMap);
             threads.add(packer);
         }
 
@@ -113,54 +96,6 @@ public class SandwichManager {
 
         //////////////////  count summary  ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Scanner scanner = null;
-        try {
-            scanner = new Scanner(new File(logfile));
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found");
-        }
-
-        // Skip first 10 lines
-        for (int i = 0; i < 10 ; i++) {
-            scanner.nextLine();
-        }
-
-        Map<String, Integer> breadMakerMap = new HashMap<>();
-        Map<String, Integer> eggMakerMap = new HashMap<>();
-        Map<String, Integer> packerMap = new HashMap<>();
-        while (scanner.hasNext()) {
-            String line = scanner.nextLine();
-            String[] logEntry = line.split(" ");
-
-            String actor = logEntry[0];
-            String command = logEntry[1];
-            String foodType = logEntry[2];
-
-            if (command.equals("puts")) {
-                if (foodType.contains("bread")) {
-                    if (breadMakerMap.containsKey(actor)) {
-                        breadMakerMap.put(actor, breadMakerMap.get(actor) + 1);
-                    } else {
-                        breadMakerMap.put(actor, 1);
-                    }
-                } else if (foodType.contains("egg")) {
-                    if (eggMakerMap.containsKey(actor)) {
-                        eggMakerMap.put(actor, eggMakerMap.get(actor) + 1);
-                    } else {
-                        eggMakerMap.put(actor, 1);
-                    }
-                }
-            }
-
-            if (command.equals("packs")) {
-                if (packerMap.containsKey(actor)) {
-                    packerMap.put(actor, packerMap.get(actor) + 1);
-                } else {
-                    packerMap.put(actor, 1);
-                }
-            }
-        }
-
         try {
             FileWriter fw = new FileWriter(logfile, true);
             BufferedWriter bw = new BufferedWriter(fw);
@@ -168,16 +103,16 @@ public class SandwichManager {
             bw.newLine();
             bw.write("summary: ");
             bw.newLine();
-            for (String key : breadMakerMap.keySet()) {
-                bw.write(key + " makes " + breadMakerMap.get(key));
+            for (String key : breadSummaryMap.keySet()) {
+                bw.write(key + " makes " + breadSummaryMap.get(key));
                 bw.newLine();
             }
-            for (String key : eggMakerMap.keySet()) {
-                bw.write(key + " makes " + eggMakerMap.get(key));
+            for (String key : eggSummaryMap.keySet()) {
+                bw.write(key + " makes " + eggSummaryMap.get(key));
                 bw.newLine();
             }
-            for (String key : packerMap.keySet()) {
-                bw.write(key + " packs " + packerMap.get(key));
+            for (String key : sandwichSummaryMap.keySet()) {
+                bw.write(key + " packs " + sandwichSummaryMap.get(key));
                 bw.newLine();
             }
             bw.close();
@@ -239,26 +174,32 @@ class FoodItem {
 
 
 class Buffer {
-    static volatile FoodItem[] buffer;               // private / static volatile
-    static volatile int front = 0, back = 0;         // private / static volatile
-    static volatile int item_count = 0;              // public
+    private volatile FoodItem[] buffer;               // private / static volatile
+    private volatile int front = -1, back = -1;         // private / static volatile
+    private volatile int item_count = 0;              // public
+    private volatile int size;
+    private volatile int count = 0;
 
     Buffer(int size) {
+        this.size = size;
         buffer = new FoodItem[size];
     }
 
     public synchronized void put(FoodItem foodItem) {
 
-        while (item_count == buffer.length) {
+        while (item_count == size) {
             try {
                 this.wait();
             } catch (InterruptedException e) {
             }
         }
+        if (front == -1)
+            front = 0;
+        back = (back + 1) % size;
         buffer[back] = foodItem;
-        back = (back + 1) % buffer.length;
         item_count++;
-        this.notifyAll();
+        count++;
+        this.notify();
     }
 
     public synchronized FoodItem get() {
@@ -270,9 +211,17 @@ class Buffer {
         }
 
         FoodItem foodItem = buffer[front];
-        front = (front + 1) % buffer.length;
+        buffer[front] = null;
+
+        if (front == back) {
+            front = -1;
+            back = -1;
+        } else {
+            front = (front + 1) % size;
+        }
         item_count--;
-        this.notifyAll();
+
+        this.notify();
 
         return foodItem;
     }
@@ -287,21 +236,22 @@ class Buffer {
 
 class MakeThread extends Thread {
     FoodType foodType;
-    String serialNo;
-    int start, end;
-    private Object lock;
+    String makerid;
     Buffer buffer;
     BufferedWriter bw;
     int rate;
+    int sandwiches;
+    Map<String, Integer> breadSummaryMap;
+    Map<String, Integer> eggSummaryMap;
 
-    public MakeThread(FoodType foodType, String serialNo, int start, int end, Object lock, Buffer buffer, String fileName, int rate) {
+    public MakeThread(FoodType foodType, String makerid, Buffer buffer, String fileName, int rate , int sandwiches, Map<String, Integer> breadSummaryMap, Map<String, Integer> eggSummaryMap) {
         this.foodType = foodType;
-        this.serialNo = serialNo;
-        this.start = start;
-        this.end = end;
-        this.lock = lock;
+        this.makerid = makerid;
         this.buffer = buffer;
         this.rate = rate;
+        this.sandwiches = sandwiches;
+        this.breadSummaryMap = breadSummaryMap;
+        this.eggSummaryMap = eggSummaryMap;
 
         try {
             FileWriter fw = new FileWriter(fileName, true);
@@ -325,53 +275,92 @@ class MakeThread extends Thread {
     public void run() {
         switch (foodType) {
             case BREAD:
-                while (start < end) {
-                    try {
-                        FoodItem bread = new FoodItem(FoodType.BREAD, start, serialNo);
-                        start++;
-                        // Thread.sleep(3000);
-                        gowork(rate);
-                        synchronized (lock) {
-                            bw.write(productionEntry(bread));
-                            bw.newLine();
-                            bw.flush();
-                        }
-                        buffer.put(bread);
-                        // Thread.sleep(1000);
-                        
+                Lock breadLock = new ReentrantLock();
+                int breadid = 0;
+                int breadCount = 0;
 
-                    // } catch (InterruptedException ie) {
-                    //     System.out.println("Error while putting thread to sleep");
-                    } catch (IOException io) {
-                        System.out.println("Error while writing to summary file");
+                while (true) {
+                    breadLock.lock();
+                    boolean notenough = false;
+
+                    try {
+                        if (breadCount < sandwiches * 2) {
+                            breadCount++;
+                            notenough = true;
+                        } else {
+                            notenough = false;
+                            break;
+                        }
+                
+                    } finally {
+                        breadLock.unlock();
+                        if (notenough) {
+                            gowork(rate);
+                            FoodItem bread = new FoodItem(FoodType.BREAD, breadid++, makerid);
+                            buffer.put(bread);
+                            try {
+                                bw.write(productionEntry(bread));
+                                bw.newLine();
+                                bw.flush();
+                            } catch (IOException e) {
+                            }
+                        }
                     }
                 }
 
+                if (breadSummaryMap.containsKey(makerid)) {
+                    breadSummaryMap.put(makerid, breadSummaryMap.get(makerid) + 1);
+                } else {
+                    breadSummaryMap.put(makerid, 1);
+                }
+
                 break;
+
             case EGG:
-                while (start < end) {
+                Lock eggLock = new ReentrantLock();
+
+                int eggid = 0;
+                int eggCount = 0;
+
+                while (true) {
+                    eggLock.lock();
+                    boolean notenough = false;
 
                     try {
-                        FoodItem egg = new FoodItem(FoodType.EGG, start, serialNo);
-                        start++;
-                        // Thread.sleep(8000);
-                        gowork(rate);
-                        synchronized (lock) {
-                            bw.write(productionEntry(egg));
-                            bw.newLine();
-                            bw.flush();
+                        if (eggCount < sandwiches) {
+                            eggCount++;
+                            notenough = true;
+                        } else {
+                            notenough = false;
+                            break;
                         }
-                        buffer.put(egg);
-                        
-                        // Thread.sleep(1000);
-                    // } catch (InterruptedException e) {
-                    //     System.out.println("Maker Error while putting thread to sleep");
-                    } catch (IOException io) {
-                        System.out.println("Maker Error while writing to summary file");
-                    }
+                
+                    } finally {
+                        eggLock.unlock();
+                        if (notenough) {
+                            gowork(rate);
+                            FoodItem egg = new FoodItem(FoodType.EGG, eggid++, makerid);
+                            buffer.put(egg);
+                            
+                            try {
+                                bw.write(productionEntry(egg));
+                                bw.newLine();
+                                bw.flush();
+                            } catch (IOException e) {
+                            }
 
+                        }
+                    }
                 }
+
+                if (eggSummaryMap.containsKey(makerid)) {
+                    eggSummaryMap.put(makerid, eggSummaryMap.get(makerid) + 1);
+                } else {
+                    eggSummaryMap.put(makerid, 1);
+                }
+
                 break;
+
             default:
                 try {
                     bw.close();
@@ -385,7 +374,7 @@ class MakeThread extends Thread {
 
     public String productionEntry(FoodItem foodItem) {
         StringBuilder sb = new StringBuilder();
-        sb.append(serialNo);
+        sb.append(makerid);
         sb.append(" puts ");
         sb.append(foodItem.getType());
         sb.append(foodItem.getFoodId());
@@ -393,11 +382,6 @@ class MakeThread extends Thread {
         return sb.toString();
     }
 
-    // @Override
-    // public String toString() {
-    //     return "Maker with id " + serialNo + " producing " + foodType.getType() + " from start: " + start
-    //             + " to end: " + end;
-    // }
 }
 
 
@@ -414,16 +398,19 @@ class PackerThread extends Thread {
     int sandwichesToPack;
     int itemsPacked = 0;
     int rate;
+    int sandwiches;
+    Map<String, Integer> sandwichSummaryMap;
+    private int sandwichid;
     private BufferedWriter bw;
     private FoodItem[] foodItems = new FoodItem[3];
 
-    public PackerThread(String serialNo, int sandwichesToPack, Object lock, Buffer breadbuffer, Buffer eggbuffer, String fileName, int rate) {
+    public PackerThread(String serialNo, Buffer breadbuffer, Buffer eggbuffer, String fileName, int rate, int sandwiches, Map<String, Integer> sandwichSummaryMap) {
         this.serialNo = serialNo;
-        this.sandwichesToPack = sandwichesToPack;
         this.breadbuffer = breadbuffer;
         this.eggbuffer = eggbuffer;
-        this.lock = lock;
         this.rate = rate;
+        this.sandwiches = sandwiches;
+        this.sandwichSummaryMap = sandwichSummaryMap;
         try {
             FileWriter fw = new FileWriter(fileName, true);
             this.bw = new BufferedWriter(fw);
@@ -445,49 +432,51 @@ class PackerThread extends Thread {
 
     @Override
     public void run() {
-        while (itemsPacked < sandwichesToPack) {
+        Lock sandwichLock = new ReentrantLock();
+        int sandwichCount = 0;
+
+        while (true) {
+            sandwichLock.lock();
+            boolean notenough = false;
+
             try {
-                // Thread.sleep(1000);
-                foodItems[0] = breadbuffer.get();
-                // Thread.sleep(2000);
-                // this.setPriority(Thread.MAX_PRIORITY);
-
-
-                // Thread.sleep(1000);
-                foodItems[1] = eggbuffer.get();
-                // Thread.sleep(2000);
-
-
-                // Thread.sleep(1000);
-                foodItems[2] = breadbuffer.get();
-                // Thread.sleep(2000);
-
-               
-                
-                itemsPacked++;
-
-                gowork(rate);
-
-                synchronized (lock) {
-                    bw.write(packingEntry());
-                    bw.newLine();
-                    bw.flush();
+                if (sandwichCount < sandwiches) {
+                    sandwichCount++;
+                    notenough = true;
+                } else {
+                    notenough = false;
+                    break;
                 }
-
-                // this.setPriority(Thread.NORM_PRIORITY);
-
-            // } catch (InterruptedException ie) {
-            //     System.out.println("Packer interrupted while packing items");
-            } catch (IOException io) {
-                System.out.println("Packer error while closing buffered writer");
+        
+            } finally {
+                sandwichLock.unlock();
+                if (notenough) {
+                    foodItems[0] = breadbuffer.get();
+                    foodItems[1] = eggbuffer.get();
+                    foodItems[2] = breadbuffer.get();
+                    sandwichid++;
+                    gowork(rate);
+                    try {
+                        bw.write(packingEntry());
+                        bw.newLine();
+                        bw.flush();
+                    } catch (IOException e) {
+                    }
+                }
             }
+        }
+
+        if (sandwichSummaryMap.containsKey(serialNo)) {
+            sandwichSummaryMap.put(serialNo, sandwichSummaryMap.get(serialNo) + 1);
+        } else {
+            sandwichSummaryMap.put(serialNo, 1);
         }
     }
 
     public String packingEntry() {
         StringBuilder sb = new StringBuilder();
         sb.append(serialNo);
-        sb.append(" packs sandwich " + "" + " with ");       // sandwich count 
+        sb.append(" packs sandwich " + sandwichid + " with ");       // sandwich count 
         sb.append(foodItems[0].getType() + " " + foodItems[0].getFoodId() + " from " + foodItems[0].getMakerId() + " and ");
         sb.append(foodItems[1].getType() + " " + foodItems[1].getFoodId() + " from " + foodItems[1].getMakerId() + " and ");
         sb.append(foodItems[2].getType() + " " + foodItems[2].getFoodId() + " from " + foodItems[2].getMakerId());
@@ -495,10 +484,6 @@ class PackerThread extends Thread {
         return sb.toString();
     }
 
-    // @Override
-    // public String toString() {
-    //     return "Packer with id " + serialNo + " packing " + itemsToPack + " " + foodType.getType();
-    // }
 }
 
 
