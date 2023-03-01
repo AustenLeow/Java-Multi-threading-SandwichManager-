@@ -8,134 +8,54 @@ bread rate: 3
 egg rate: 5
 packing rate: 4
 
-B1 puts bread0
-B2 puts bread0
-B0 puts bread0
-B2 puts bread1
-E0 puts egg0
-E2 puts egg0
-E1 puts egg0
-B1 puts bread1
-B1 puts bread2
-B1 puts bread3
-B1 puts bread4
-B1 puts bread5
-B1 puts bread6
-S0 packs sandwich 1 with bread 0 from B1 and egg 0 from E0 and bread 1 from B2
-B1 puts bread7
-S1 packs sandwich 1 with bread 0 from B2 and egg 0 from E1 and bread 2 from B1
-B2 puts bread2
-S2 packs sandwich 1 with bread 0 from B0 and egg 0 from E2 and bread 1 from B1
-B0 puts bread1
-E2 puts egg1
-E2 puts egg2
-E2 puts egg3
-E2 puts egg4
-E2 puts egg5
-B2 puts bread3
-B1 puts bread8
-E0 puts egg1
-B2 puts bread4
-E0 puts egg2
-S0 packs sandwich 2 with bread 3 from B1 and egg 1 from E2 and bread 6 from B1
-B2 puts bread5
-B2 puts bread6
-E0 puts egg3
-S2 packs sandwich 2 with bread 5 from B1 and egg 2 from E2 and bread 7 from B1
-B1 puts bread9
-B2 puts bread7
-E2 puts egg6
-S1 packs sandwich 2 with bread 4 from B1 and egg 3 from E2 and bread 2 from B2
-B0 puts bread2
-B2 puts bread8
-E1 puts egg1
-S0 packs sandwich 3 with bread 1 from B0 and egg 4 from E2 and bread 3 from B2
-S0 packs sandwich 4 with bread 7 from B2 and egg 2 from E0 and bread 9 from B1
-S0 packs sandwich 5 with bread 2 from B0 and egg 3 from E0 and bread 8 from B2
-B1 puts bread10
-B1 puts bread11
-B1 puts bread12
-B1 puts bread13
-E2 puts egg7
-E2 puts egg8
-S0 packs sandwich 6 with bread 10 from B1 and egg 6 from E2 and bread 11 from B1
-S0 packs sandwich 7 with bread 12 from B1 and egg 1 from E1 and bread 13 from B1
-B1 puts bread14
-E1 puts egg2
-B1 puts bread15
-B1 puts bread16
-E1 puts egg3
-B1 puts bread17
-S0 packs sandwich 8 with bread 14 from B1 and egg 7 from E2 and bread 15 from B1
-E2 puts egg9
-S0 packs sandwich 9 with bread 16 from B1 and egg 8 from E2 and bread 17 from B1
-B1 puts bread18
-B1 puts bread19
-E0 puts egg4
-S0 packs sandwich 10 with bread 18 from B1 and egg 2 from E1 and bread 19 from B1
-E1 puts egg4
-B2 puts bread9
-B0 puts bread3
-B2 puts bread10
-B0 puts bread4
-S1 packs sandwich 3 with bread 5 from B2 and egg 1 from E0 and bread 6 from B2
-S1 packs sandwich 4 with bread 9 from B2 and egg 3 from E1 and bread 3 from B0
-S1 packs sandwich 5 with bread 10 from B2 and egg 9 from E2 and bread 4 from B0
-B2 puts bread11
-E1 puts egg5
-B2 puts bread12
-S2 packs sandwich 3 with bread 8 from B1 and egg 5 from E2 and bread 4 from B2
-S1 packs sandwich 6 with bread 11 from B2 and egg 4 from E0 and bread 12 from B2
-E0 puts egg5
-B2 puts bread13
-B2 puts bread14
-B0 puts bread5
-B2 puts bread15
-E0 puts egg6
-E0 puts egg7
-S1 packs sandwich 7 with bread 13 from B2 and egg 4 from E1 and bread 14 from B2
-E1 puts egg6
-B2 puts bread16
-S2 packs sandwich 4 with bread 5 from B0 and egg 5 from E1 and bread 15 from B2
-B2 puts bread17
-B2 puts bread18
-B2 puts bread19
-S1 packs sandwich 8 with bread 17 from B2 and egg 6 from E0 and bread 19 from B2
-S2 packs sandwich 5 with bread 16 from B2 and egg 5 from E0 and bread 18 from B2
-E1 puts egg7
-B0 puts bread6
-E0 puts egg8
-B0 puts bread7
-E0 puts egg9
-B0 puts bread8
-S1 packs sandwich 9 with bread 6 from B0 and egg 7 from E0 and bread 7 from B0
-B0 puts bread9
-E1 puts egg8
-B0 puts bread10
-E1 puts egg9
-B0 puts bread11
-S1 packs sandwich 10 with bread 8 from B0 and egg 6 from E1 and bread 10 from B0
-B0 puts bread12
-B0 puts bread13
-B0 puts bread14
-S2 packs sandwich 6 with bread 9 from B0 and egg 7 from E1 and bread 11 from B0
-B0 puts bread15
-B0 puts bread16
-S2 packs sandwich 7 with bread 12 from B0 and egg 8 from E0 and bread 13 from B0
-B0 puts bread17
-B0 puts bread18
-B0 puts bread19
-S2 packs sandwich 8 with bread 14 from B0 and egg 9 from E0 and bread 15 from B0
-S2 packs sandwich 9 with bread 16 from B0 and egg 8 from E1 and bread 17 from B0
-S2 packs sandwich 10 with bread 18 from B0 and egg 9 from E1 and bread 19 from B0
+B0 puts bread 0
+B2 puts bread 0
+B1 puts bread 0
+E0 puts egg 0
+B2 puts bread 1
+E1 puts egg 0
+E2 puts egg 0
+B0 puts bread 1
+B0 puts bread 2
+B0 puts bread 3
+B0 puts bread 4
+B0 puts bread 5
+B0 puts bread 6
+S2 packs sandwich 0 with bread 0 from B0 and egg 0 from E0 and bread 1 from B2
+B0 puts bread 7
+S1 packs sandwich 0 with bread 0 from B1 and egg 0 from E1 and bread 1 from B0
+B2 puts bread 2
+S0 packs sandwich 0 with bread 0 from B2 and egg 0 from E2 and bread 2 from B0
+B0 puts bread 8
+E0 puts egg 1
+E0 puts egg 2
+E0 puts egg 3
+E0 puts egg 4
+E0 puts egg 5
+B2 puts bread 3
+B2 puts bread 4
+E1 puts egg 1
+B0 puts bread 9
+E2 puts egg 1
+S2 packs sandwich 1 with bread 3 from B0 and egg 1 from E0 and bread 6 from B0
+B2 puts bread 5
+B0 puts bread 10
+S0 packs sandwich 1 with bread 5 from B0 and egg 2 from E0 and bread 7 from B0
+B2 puts bread 6
+B1 puts bread 1
+S1 packs sandwich 1 with bread 4 from B0 and egg 3 from E0 and bread 2 from B2
+S2 packs sandwich 2 with bread 8 from B0 and egg 4 from E0 and bread 3 from B2
+S0 packs sandwich 2 with bread 4 from B2 and egg 5 from E0 and bread 9 from B0
+S1 packs sandwich 2 with bread 10 from B0 and egg 1 from E1 and bread 5 from B2
+S2 packs sandwich 3 with bread 6 from B2 and egg 1 from E2 and bread 1 from B1
 
 summary: 
-B2 makes 1
-B0 makes 1
-B1 makes 1
-E0 makes 1
-E1 makes 1
-E2 makes 1
-S0 packs 1
-S1 packs 1
-S2 packs 1
+B2 makes 7
+B0 makes 11
+B1 makes 2
+E0 makes 6
+E1 makes 2
+E2 makes 2
+S0 packs 3
+S1 packs 3
+S2 packs 4

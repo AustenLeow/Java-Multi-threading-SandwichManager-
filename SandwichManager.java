@@ -8,8 +8,11 @@ import java.util.concurrent.locks.ReentrantLock;
  ********************************************************************************************************************************/
 
 public class SandwichManager {
-    // static Object lock = new Object();
+
     static String logfile = "log.txt";
+    static final Map<String, Integer> breadSummaryMap = new HashMap<String, Integer>();
+    static final Map<String, Integer> eggSummaryMap = new HashMap<String, Integer>();
+    static final  Map<String, Integer> sandwichSummaryMap = new HashMap<String, Integer>();
 
     public static void main(String[] args) {
         int sandwiches = Integer.parseInt(args[0]);
@@ -21,6 +24,7 @@ public class SandwichManager {
         int breadrate = Integer.parseInt(args[6]);
         int eggrate = Integer.parseInt(args[7]);
         int packingrate = Integer.parseInt(args[8]);
+        
 
         try {
             FileWriter fw = new FileWriter(logfile, false);
@@ -52,31 +56,27 @@ public class SandwichManager {
 
         Buffer breadbuffer = new Buffer(breadcap);
         Buffer eggbuffer = new Buffer(eggcap);
-        
-        Map<String, Integer> breadSummaryMap = new HashMap<String, Integer>();
-        Map<String, Integer> eggSummaryMap = new HashMap<String, Integer>();
-        Map<String, Integer> sandwichSummaryMap = new HashMap<String, Integer>();
 
         List<Thread> threads = new ArrayList<Thread>();
 
         // bread makers
         for (int i = 0; i < breadmakers; i++) {
             String makerid = "B" + i;
-            MakeThread breadMaker = new MakeThread(FoodType.BREAD, makerid, breadbuffer, logfile, breadrate, sandwiches, breadSummaryMap, eggSummaryMap);
+            MakeThread breadMaker = new MakeThread(FoodType.BREAD, makerid, breadbuffer, logfile, breadrate, sandwiches);
             threads.add(breadMaker);
         }
 
         // egg makers
         for (int i = 0; i < eggmakers; i++) {
             String makerid = "E" + i;
-            MakeThread eggMaker = new MakeThread(FoodType.EGG, makerid, eggbuffer, logfile, eggrate, sandwiches, breadSummaryMap, eggSummaryMap);
+            MakeThread eggMaker = new MakeThread(FoodType.EGG, makerid, eggbuffer, logfile, eggrate, sandwiches);
             threads.add(eggMaker);
         }
 
         // packers
         for (int i = 0; i < packers; i++) {
             String packerid = "S" + i;
-            PackerThread packer = new PackerThread(packerid, breadbuffer, eggbuffer, logfile, packingrate, sandwiches, sandwichSummaryMap);
+            PackerThread packer = new PackerThread(packerid, breadbuffer, eggbuffer, logfile, packingrate, sandwiches);
             threads.add(packer);
         }
 
@@ -178,7 +178,7 @@ class Buffer {
     private volatile int front = -1, back = -1;         // private / static volatile
     private volatile int item_count = 0;              // public
     private volatile int size;
-    private volatile int count = 0;
+    static volatile int count = 0;
 
     Buffer(int size) {
         this.size = size;
@@ -241,17 +241,15 @@ class MakeThread extends Thread {
     BufferedWriter bw;
     int rate;
     int sandwiches;
-    Map<String, Integer> breadSummaryMap;
-    Map<String, Integer> eggSummaryMap;
+    volatile static int breadCount = 0;
+    volatile static int eggCount = 0;
 
-    public MakeThread(FoodType foodType, String makerid, Buffer buffer, String fileName, int rate , int sandwiches, Map<String, Integer> breadSummaryMap, Map<String, Integer> eggSummaryMap) {
+    public MakeThread(FoodType foodType, String makerid, Buffer buffer, String fileName, int rate , int sandwiches) {
         this.foodType = foodType;
         this.makerid = makerid;
         this.buffer = buffer;
         this.rate = rate;
         this.sandwiches = sandwiches;
-        this.breadSummaryMap = breadSummaryMap;
-        this.eggSummaryMap = eggSummaryMap;
 
         try {
             FileWriter fw = new FileWriter(fileName, true);
@@ -277,7 +275,6 @@ class MakeThread extends Thread {
             case BREAD:
                 Lock breadLock = new ReentrantLock();
                 int breadid = 0;
-                int breadCount = 0;
 
                 while (true) {
                     breadLock.lock();
@@ -308,19 +305,13 @@ class MakeThread extends Thread {
                     }
                 }
 
-                if (breadSummaryMap.containsKey(makerid)) {
-                    breadSummaryMap.put(makerid, breadSummaryMap.get(makerid) + 1);
-                } else {
-                    breadSummaryMap.put(makerid, 1);
-                }
-
+                SandwichManager.breadSummaryMap.put(makerid, breadid);
                 break;
 
             case EGG:
                 Lock eggLock = new ReentrantLock();
 
                 int eggid = 0;
-                int eggCount = 0;
 
                 while (true) {
                     eggLock.lock();
@@ -353,11 +344,7 @@ class MakeThread extends Thread {
                     }
                 }
 
-                if (eggSummaryMap.containsKey(makerid)) {
-                    eggSummaryMap.put(makerid, eggSummaryMap.get(makerid) + 1);
-                } else {
-                    eggSummaryMap.put(makerid, 1);
-                }
+                SandwichManager.eggSummaryMap.put(makerid, eggid);
 
                 break;
 
@@ -377,6 +364,7 @@ class MakeThread extends Thread {
         sb.append(makerid);
         sb.append(" puts ");
         sb.append(foodItem.getType());
+        sb.append(" ");
         sb.append(foodItem.getFoodId());
         
         return sb.toString();
@@ -399,18 +387,19 @@ class PackerThread extends Thread {
     int itemsPacked = 0;
     int rate;
     int sandwiches;
-    Map<String, Integer> sandwichSummaryMap;
-    private int sandwichid;
+    volatile static int sandwichCount = 0;
+
+    private int sandwichid = 0;
     private BufferedWriter bw;
     private FoodItem[] foodItems = new FoodItem[3];
 
-    public PackerThread(String serialNo, Buffer breadbuffer, Buffer eggbuffer, String fileName, int rate, int sandwiches, Map<String, Integer> sandwichSummaryMap) {
+    public PackerThread(String serialNo, Buffer breadbuffer, Buffer eggbuffer, String fileName, int rate, int sandwiches) {
         this.serialNo = serialNo;
         this.breadbuffer = breadbuffer;
         this.eggbuffer = eggbuffer;
         this.rate = rate;
         this.sandwiches = sandwiches;
-        this.sandwichSummaryMap = sandwichSummaryMap;
+
         try {
             FileWriter fw = new FileWriter(fileName, true);
             this.bw = new BufferedWriter(fw);
@@ -433,7 +422,6 @@ class PackerThread extends Thread {
     @Override
     public void run() {
         Lock sandwichLock = new ReentrantLock();
-        int sandwichCount = 0;
 
         while (true) {
             sandwichLock.lock();
@@ -454,7 +442,6 @@ class PackerThread extends Thread {
                     foodItems[0] = breadbuffer.get();
                     foodItems[1] = eggbuffer.get();
                     foodItems[2] = breadbuffer.get();
-                    sandwichid++;
                     gowork(rate);
                     try {
                         bw.write(packingEntry());
@@ -462,15 +449,12 @@ class PackerThread extends Thread {
                         bw.flush();
                     } catch (IOException e) {
                     }
+                    sandwichid++;
                 }
             }
         }
 
-        if (sandwichSummaryMap.containsKey(serialNo)) {
-            sandwichSummaryMap.put(serialNo, sandwichSummaryMap.get(serialNo) + 1);
-        } else {
-            sandwichSummaryMap.put(serialNo, 1);
-        }
+        SandwichManager.sandwichSummaryMap.put(serialNo, sandwichid);
     }
 
     public String packingEntry() {
