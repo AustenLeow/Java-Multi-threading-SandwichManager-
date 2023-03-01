@@ -1,5 +1,7 @@
 # Java Multi-threading (Sandwich Manager)
-1. To compile:
+
+## How to run this program in your terminal
+1. Compile:
 ```
 javac SandwichManager.java
 ```
