@@ -1,0 +1,61 @@
+sandwiches:10
+bread capacity:4
+egg capacity:4
+bread makers:3
+egg makers:3
+sandwich packers:3
+bread rate:3
+egg rate:5
+packing rate:4
+
+B0 puts bread0
+B1 puts bread7
+B2 puts bread14
+E0 puts egg0
+B1 puts bread8
+E2 puts egg8
+E1 puts egg4
+B0 puts bread1
+B0 puts bread2
+B0 puts bread3
+B0 puts bread4
+B0 puts bread5
+B0 puts bread6
+B2 puts bread15
+B1 puts bread9
+S0 packs sandwich  with bread 0 from B0 and egg 0 from E0 and bread 8 from B1
+B2 puts bread16
+B2 puts bread17
+B2 puts bread18
+S2 packs sandwich  with bread 7 from B1 and egg 4 from E1 and bread 2 from B0
+B2 puts bread19
+B1 puts bread10
+S1 packs sandwich  with bread 14 from B2 and egg 8 from E2 and bread 1 from B0
+B1 puts bread11
+B1 puts bread12
+B1 puts bread13
+E0 puts egg1
+E1 puts egg5
+E2 puts egg9
+S0 packs sandwich  with bread 3 from B0 and bread 4 from B0 and bread 5 from B0
+E0 puts egg2
+S2 packs sandwich  with bread 6 from B0 and bread 15 from B2 and bread 16 from B2
+S1 packs sandwich  with bread 17 from B2 and bread 18 from B2 and bread 19 from B2
+E1 puts egg6
+E1 puts egg7
+S0 packs sandwich  with bread 9 from B1 and bread 10 from B1 and bread 11 from B1
+E0 puts egg3
+S1 packs sandwich  with bread 12 from B1 and bread 13 from B1 and egg 1 from E0
+S0 packs sandwich  with egg 9 from E2 and egg 5 from E1 and egg 6 from E1
+S1 packs sandwich  with egg 7 from E1 and egg 2 from E0 and egg 3 from E0
+
+summary: 
+B2 makes 6
+B0 makes 7
+B1 makes 7
+E0 makes 4
+E1 makes 4
+E2 makes 2
+S0 packs 4
+S1 packs 4
+S2 packs 2
