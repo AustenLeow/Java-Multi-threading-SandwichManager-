@@ -1,19 +1,19 @@
-# Java-Multi-threading-SandwichManager-
+# Java Multi-threading (Sandwich Manager)
 1. To compile:
 ```
 javac SandwichManager.java
 ```
 
-2. Run with sample arguments: 
-sandwiches:10
-bread capacity:4
-egg capacity:4
-bread makers:3
-egg makers:3
-sandwich packers:3
-bread rate:3
-egg rate:5
-packing rate:4
+2. Run with sample arguments described below: 
+- sandwiches: 10
+- bread capacity: 4
+- egg capacity: 4
+- bread makers: 3
+- egg makers: 3
+- sandwich packers: 3
+- bread rate: 3
+- egg rate: 5
+- packing rate: 4
 ```
 java SandwichManager 10 4 4 3 3 3 3 5 4
 ```
@@ -21,7 +21,7 @@ java SandwichManager 10 4 4 3 3 3 3 5 4
 3. Open log.txt to see the records
 
 
-## Problem
+## Task
 #### Introduction
 Consider a sandwich making factory with three types of machines: a bread toaster, a scrambled egg maker, and a sandwich packer
 - A bread toaster will toast a single slice of bread and put it in a bread pool
