@@ -280,6 +280,11 @@ class MakeThread extends Thread {
                 m--; 
             }
         }
+        // try {
+        //     Thread.sleep(n);
+        // } catch (InterruptedException e) {
+        //     System.out.println("got interrupted!");
+        // }
     }
 
     @Override
@@ -293,36 +298,34 @@ class MakeThread extends Thread {
 
                 while (true) {
 
+                    gowork(rate);
+
                     // lock the part when we are keeping track of food count, so the the update happens 1 by 1
                     breadLock.lock();
-                    boolean notenough = false;
 
                     try {
-                        if (breadCount < sandwiches * 2) {          // 2 bread for every sandwich
-                            breadCount++;
-                            notenough = true;
-                        } else {
-                            notenough = false;
-                            break;
+                        if (breadCount >= sandwiches * 2) { // check if enough bread has been made
+                            break; // exit while loop if enough bread has been made
                         }
-                
+
+                        FoodItem bread = new FoodItem(FoodType.BREAD, breadid++, makerid);
+
+                        // add to pool
+                        buffer.put(bread);
+                        try {
+                            // call print function
+                            bw.write(productionEntry(bread));
+                            bw.newLine();
+                            bw.flush();
+                        } catch (IOException e) {
+                        }
+
+                        breadCount++;
+                    
                     } finally {
                         breadLock.unlock();
-                        if (notenough) {
-                            gowork(rate);
-                            FoodItem bread = new FoodItem(FoodType.BREAD, breadid++, makerid);
-
-                            // add to pool
-                            buffer.put(bread);
-                            try {
-                                // call print function
-                                bw.write(productionEntry(bread));
-                                bw.newLine();
-                                bw.flush();
-                            } catch (IOException e) {
-                            }
-                        }
                     }
+
                 }
 
                 // update hashmap 
@@ -337,33 +340,31 @@ class MakeThread extends Thread {
                 int eggid = 0;
 
                 while (true) {
+                    gowork(rate);
+
+                    // lock the part when we are keeping track of food count, so the the update happens 1 by 1
                     eggLock.lock();
-                    boolean notenough = false;
 
                     try {
-                        if (eggCount < sandwiches) {
-                            eggCount++;
-                            notenough = true;
-                        } else {
-                            notenough = false;
-                            break;
+                        if (eggCount >= sandwiches) { 
+                            break; 
                         }
-                
+
+                        FoodItem egg = new FoodItem(FoodType.EGG, eggid++, makerid);
+
+                        // add to pool
+                        buffer.put(egg);
+                        try {
+                            bw.write(productionEntry(egg));
+                            bw.newLine();
+                            bw.flush();
+                        } catch (IOException e) {
+                        }
+
+                        eggCount++;
+
                     } finally {
                         eggLock.unlock();
-                        if (notenough) {
-                            gowork(rate);
-                            FoodItem egg = new FoodItem(FoodType.EGG, eggid++, makerid);
-                            buffer.put(egg);
-                            
-                            try {
-                                bw.write(productionEntry(egg));
-                                bw.newLine();
-                                bw.flush();
-                            } catch (IOException e) {
-                            }
-
-                        }
                     }
                 }
 
@@ -438,11 +439,16 @@ class PackerThread extends Thread {
     }
 
     static void gowork(int n) {
-        for (int i=0; i<n; i++){
-            long m = 300000000;
-            while (m>0){
-                m--; 
-            }
+        // for (int i=0; i<n; i++){
+        //     long m = 300000000;
+        //     while (m>0){
+        //         m--; 
+        //     }
+        // }
+        try {
+            Thread.sleep(n);
+        } catch (InterruptedException e) {
+            System.out.println("got interrupted!");
         }
     }
 
