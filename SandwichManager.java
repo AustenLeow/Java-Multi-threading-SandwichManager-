@@ -439,17 +439,17 @@ class PackerThread extends Thread {
     }
 
     static void gowork(int n) {
-        for (int i=0; i<n; i++){
-            long m = 300000000;
-            while (m>0){
-                m--; 
-            }
-        }
-        // try {
-        //     Thread.sleep(n);
-        // } catch (InterruptedException e) {
-        //     System.out.println("got interrupted!");
+        // for (int i=0; i<n; i++){
+        //     long m = 300000000;
+        //     while (m>0){
+        //         m--; 
+        //     }
         // }
+        try {
+            Thread.sleep(n);
+        } catch (InterruptedException e) {
+            System.out.println("got interrupted!");
+        }
     }
 
 
@@ -458,40 +458,46 @@ class PackerThread extends Thread {
         Lock sandwichLock = new ReentrantLock();
 
         while (true) {
-            gowork(rate);
             sandwichLock.lock();
+            boolean notenough = false;
 
             try {
                 if (sandwichCount < sandwiches) {
                     sandwichCount++;
+                    notenough = true;
                 } else {
+                    notenough = false;
                     break;
-                }
-
-                // take ingredients from respective pools
-                foodItems[0] = breadbuffer.get();
-                foodItems[1] = eggbuffer.get();
-                foodItems[2] = breadbuffer.get();
-                
-                sandwichid++;
-
-                try {
-                    // call print function
-                    bw.write(packingEntry());
-                    bw.newLine();
-                    bw.flush();
-                } catch (IOException e) {
                 }
         
             } finally {
                 sandwichLock.unlock();
+                if (notenough) {
+
+                    // take ingredients from respective pools
+                    foodItems[0] = breadbuffer.get();
+                    foodItems[1] = eggbuffer.get();
+                    foodItems[2] = breadbuffer.get();
+                    
+                    gowork(rate);
+
+                    try {
+
+                        // call print function
+                        bw.write(packingEntry());
+                        bw.newLine();
+                        bw.flush();
+                    } catch (IOException e) {
+                    }
+
+                    sandwichid++;
+                }
             }
         }
+
         // update sandwich map
         SandwichManager.sandwichSummaryMap.put(serialNo, sandwichid);
     }
-
-
 
     // print function after packing sandwich
     public String packingEntry() {
